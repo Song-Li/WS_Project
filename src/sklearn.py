@@ -26,7 +26,7 @@ class SKLearn:
         self.algo = algo
         self.df = pd.read_csv(data_path, header=None)
 
-    def pre_data(self, pca: bool):
+    def pre_data(self, pca: bool=False):
         """
         preparing the data
         Args:
@@ -60,10 +60,11 @@ class SKLearn:
         """
         return compressed_data, label
     
-    def train(self, data_frame, label):
+    def train(self, data_frame, label, over_sampling=True, verbose=False):
         skf = StratifiedKFold(n_splits=5)
         skf_val = StratifiedKFold(n_splits=4)
         data = data_frame 
+        scores = []
         for train_index, _ in skf.split(data, label):
             ros = RandomOverSampler(random_state=0)
             train_data = data[train_index]
@@ -72,23 +73,33 @@ class SKLearn:
                 clf = MLPClassifier(hidden_layer_sizes=25, activation='relu', solver='adam', batch_size = 64, learning_rate='adaptive', learning_rate_init=0.001, early_stopping=True, random_state=1, max_iter=300)
             elif self.algo == 'rf':
                 clf = RandomForestClassifier(max_depth=4,random_state=0)
+        
             for vtrain_index, val_index in skf_val.split(train_data, train_label):
                 vtrain_data = train_data[vtrain_index]
                 vtrain_label = train_label[vtrain_index]
                 val_data = train_data[val_index]
                 val_label = train_label[val_index]
-                X, y = ros.fit_resample(train_data, train_label)
-                # clf = MLPClassifier(random_state=1, max_iter=300)
-                # clf = RandomForestClassifier(max_depth=4,random_state=0)
+                if over_sampling:
+                    X, y = ros.fit_resample(train_data, train_label)
+                else:
+                    X, y = train_data, train_label
                 with warnings.catch_warnings():
                     warnings.filterwarnings("ignore", category=ConvergenceWarning, module="sklearn")
                     clf.fit(X,y)
-                # print(sum(train_label==0))
 
-                print("The score for True cases are: " + str(clf.score(val_data[val_label==1], val_label[val_label==1])))
-                print("The score for False cases are: " + str(clf.score(val_data[val_label==0], val_label[val_label==0])))
-            
+                scores.append([
+                    clf.score(val_data[val_label==1], val_label[val_label==1]), 
+                    clf.score(val_data[val_label==0], val_label[val_label==0])])
+
+                if verbose:
+                    print("The score for True cases are: " + str(clf.score(val_data[val_label==1], val_label[val_label==1])))
+                    print("The score for False cases are: " + str(clf.score(val_data[val_label==0], val_label[val_label==0])))
+        
+        overall_score = [sum([s[0] for s in scores]) / len(scores), sum([s[1] for s in scores]) / len(scores)]
+        print(f"Overall score for True and False labels: {overall_score}")
+        """
         for train_index, test_index in skf.split(data, label):
             print(test_index.shape)
             # print(train_index.shape)
             # print(data[test_index].shape)
+        """

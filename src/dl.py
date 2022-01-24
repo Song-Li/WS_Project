@@ -1,18 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
-# pip install https://github.com/ufoym/imbalanced-dataset-sampler/archive/master.zip
-
-
-# In[ ]:
-
-
-#Important Note About Current File:
-#This code was modified and completed based on A homework I completed myself in the Deep Learning Course taught by Professor Unberath.
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -57,19 +42,6 @@ with open( file_name , "r") as file:
     Y.append(lst[-1].strip())
     # print(lst[-1])
 
-"""
-file_name = "aidata_2.log"
-with open( file_name , "r") as file:
-  for line in file:
-    line = line.replace("[", "")
-    line = line.replace("]", ",")
-    line = line.replace("True", "1")
-    line = line.replace("False", "0")
-    lst = line.split(",")
-    X.append(lst[:-1])
-    Y.append(lst[-1].strip())
-    # print(lst[-1])
-"""
 X = np.array(X).astype(int)
 Y = np.array(Y).astype(int)
 
@@ -96,19 +68,10 @@ train_labels = np.array(train_labels)
 val_labels = np.array(val_labels)
 train_labels_before = np.copy(train_labels)
 
-# val_data, val_labels = ros.fit_resample(val_data, val_labels)
-
-
-# In[ ]:
-
-
 ros = RandomOverSampler(random_state=42)
 train_data_ros, train_labels_ros = ros.fit_resample(train_data, train_labels)
 print(len(np.where(train_labels_ros==1)[0]) / len(train_labels_ros))
 print(len(np.where(train_labels_ros==0)[0]) / len(train_labels_ros))
-
-
-# In[ ]:
 
 
 classes = [False, True]
@@ -125,18 +88,8 @@ fig.tight_layout()
 plt.show()
 
 
-# In[ ]:
-
-
 gpu_boole = torch.cuda.is_available()
 batch_size, input_dim, hidden_1, hidden_2, hidden_3, hidden_4, hidden_5, output_dim = 32, len(X[0]), 70, 80, 100, 120, 40, 1
-# batch_size, input_dim, hidden_1, hidden_2, hidden_3, hidden_4, hidden_5, output_dim = 32, len(X[0]), 10, 20, 80, 120, 60, 1
-
-# np.random.rand(100)
-
-
-# In[ ]:
-
 
 # train_data, val_data = np.split(X, [split_tr])
 # train_labels, val_labels = np.split(Y, [split_tr])
@@ -145,9 +98,6 @@ scaler = StandardScaler()
 train_data_normalized = scaler.fit_transform(train_data_ros)
 val_data_normalized = scaler.fit_transform(val_data)
 print(train_data_normalized.shape, train_labels.shape, val_data_normalized.shape, val_labels.shape)
-
-
-# In[ ]:
 
 
 epochs = 200
